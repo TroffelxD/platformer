@@ -1,86 +1,70 @@
 import pygame
 import random
+from src import Player
+from src import Platform
 
-pygame.init()
-screen = pygame.display.set_mode((1280, 720))
-clock = pygame.time.Clock()
-running = True
-dt = 0
-Score = 0
+class Game:
 
-player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+    def __init__(self):
+        self.__screen = pygame.display.set_mode((1280, 720))
+        self.__clock = pygame.time.Clock()
 
+        self.__platforms = pygame.sprite.Group()
+        self.__players = pygame.sprite.Group()
 
-def player():
-    return pygame.draw.circle(screen, "red",  player_pos, 40)
+        ground = Platform.Platform((0,128,0), 1280, 40, x=0, y=680)
+        self.__platforms.add(ground)
 
-def ground():
-    pygame.draw.rect(screen, "darkgreen", (0, 650, 1280, 1280))
+        self.__dt = 0
 
-
-def platform(posx, posy):
-    return pygame.Rect(posy, posx, 100, 30)
-        
-
-def gravity(pos):
-    if player_pos.y <= pos:
-        player_pos.y += 500 * dt
-
-
-def outOfBounce():
-    if player_pos.x >= 1280:
-        player_pos.x = 1
-    if player_pos.x <= 0:
-        player_pos.x = 1279
-
-
-platforms = [platform(
-    random.uniform(100, 500),
-    random.uniform(100, 500)
-) for _ in range(3)]
-
-
-
-while running:
-    for event in  pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+        player = Player.Player(x=100, y=100)
+        self.__players.add(player)
+        self.__running = True
+        self.createPlatforms()
     
 
+    def playground(self):
+        self.__screen.fill("lightblue")
 
-    screen.fill("lightblue")
+    def createPlatforms(self):
+        for i in range(20):
+            platform = Platform.Platform((0, 0, 0), 100, 20, x=random.uniform(100, 1000), y=random.uniform(40, 600))
+            self.__platforms.add(platform)
 
-    player1 = player()
-    ground()
-    #gravity(610)
-    outOfBounce()
+    #def outOfBounce(self):
+    #    if self.__player_pos.x >= 1280:
+    #        self.__player_pos.x = 1
+    #    if self.__player_pos.x <= 0:
+    #        self.__player_pos.x = 1279
 
-
-    #platform1 = platform(300, 200, "black")
-    #platform(200, 300, "grey")
-
-
-    for p in platforms:
-        if p.colliderect(player1):
-            gravity(p[1]-40)
-            break 
-    else:
-        gravity(610)
+    #def gravity(self):
+    #    if self.__player_pos.y <= 610:
+    #        self.__player_pos.y += 500 * self.__dt
 
 
+    def startGame(self):
+        pygame.init()
+        while self.__running:
+            for event in  pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.__running = False
+
+
+            self.playground()
+            #self.outOfBounce()
+            self.__players.update(self.__dt, self.__platforms)
+            self.__platforms.draw(self.__screen)
+            self.__players.draw(self.__screen)
 
 
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_SPACE]:
-        player_pos.y -= 1000 * dt
-    if keys [pygame.K_a]:
-        player_pos.x -= 1000 * dt
-    if keys [pygame.K_d]:
-        player_pos.x += 1000 * dt
+            pygame.display.flip()
+            self.__dt = self.__clock.tick(60) / 1000  
 
-    pygame.display.flip()
+        pygame.quit()
 
-    dt = clock.tick(60) / 1000
 
-pygame.quit()
+
+if __name__ == "__main__":
+    game = Game()
+    game.startGame()
