@@ -39,15 +39,24 @@ class Player(pygame.sprite.Sprite):
         hits = pygame.sprite.spritecollide(self, platforms, False)
         for platform in hits:
             if dx:
+                # Only correct if moving into the platform, not if already overlapping
                 if self.vel.x > 0:
-                    self.rect.right = platform.rect.left
+                    overlap = self.rect.right - platform.rect.left
+                    if 0 < overlap < self.rect.width:
+                        self.rect.right = platform.rect.left
+                        self.vel.x = 0
                 elif self.vel.x < 0:
-                    self.rect.left = platform.rect.right
-                self.vel.x = 0
+                    overlap = platform.rect.right - self.rect.left
+                    if 0 < overlap < self.rect.width:
+                        self.rect.left = platform.rect.right
+                        self.vel.x = 0
             else:
-                if self.vel.y > 0:
+                # Only block if falling and player's bottom was above the platform last frame
+                if (
+                    self.vel.y > 0 and
+                    self.rect.bottom > platform.rect.top and
+                    self.rect.bottom - self.vel.y * 0.016 <= platform.rect.top
+                ):
                     self.rect.bottom = platform.rect.top
+                    self.vel.y = 0
                     self.on_ground = True
-                elif self.vel.y < 0:
-                    self.rect.top = platform.rect.bottom
-                self.vel.y = 0
