@@ -41,22 +41,31 @@ class Game:
             last_x = x
 
     def showGameOverScreen(self):
-        font = pygame.font.SysFont(None, 72)
+        font       = pygame.font.SysFont(None, 72)
         small_font = pygame.font.SysFont(None, 48)
-        text = font.render("You Died", True, (255, 0, 0))
-        info = small_font.render("Press Enter to Respawn", True, (255, 255, 255))
-        while True:
-            self.__screen.fill("black")
-            self.__screen.blit(text, (640 - text.get_width() // 2, 300))
-            self.__screen.blit(info, (640 - info.get_width() // 2, 400))
-            pygame.display.flip()
+        text  = font.render("You Died", True, (255, 0, 0))
+        info  = small_font.render("Press Enter to Respawn", True, (255, 255, 255))
+
+        waiting = True
+        while waiting and self.__running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.__running = False
-                    return
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                    self.respawn()
-                    return
+                    waiting = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                        waiting = False
+
+            self.__screen.fill("black")
+            self.__screen.blit(text, (640 - text.get_width() // 2, 300))
+            self.__screen.blit(info, (640 - info.get_width()  // 2, 400))
+            pygame.display.flip()
+            self.__clock.tick(15)
+
+        if self.__running:
+            print("→ Respawning…")
+            self.respawn()
+
                 
     def respawn(self):
         self.__platforms.empty()
@@ -100,8 +109,6 @@ class Game:
     
             if player.rect.top > 720:
                 self.showGameOverScreen()
-                # After respawn, skip drawing and updating until next frame
-                continue
     
             self.__platforms.draw(self.__screen)
             self.__players.draw(self.__screen)
