@@ -51,12 +51,10 @@ class Player(pygame.sprite.Sprite):
                         self.rect.left = platform.rect.right
                         self.vel.x = 0
             else:
-                # Only block if falling and player's bottom was above the platform last frame
-                if (
-                    self.vel.y > 0 and
-                    self.rect.bottom > platform.rect.top and
-                    self.rect.bottom - self.vel.y * 0.016 <= platform.rect.top
-                ):
+                if self.vel.y > 0:  # Falling
                     self.rect.bottom = platform.rect.top
                     self.vel.y = 0
                     self.on_ground = True
+                elif self.vel.y < 0:  # Jumping up
+                    self.rect.top = platform.rect.bottom
+                    self.vel.y = 0
